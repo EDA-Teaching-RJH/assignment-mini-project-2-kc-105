@@ -50,6 +50,10 @@ class clothes(product):
     
     def detailed_view(self):
         return f"[{super().displayinfo()} size:{self.size}]"
+    
+    def get_price(self):
+        return self.price * 0.9#if customer is employee 10% discount
+        
         
 class electronics(product):
     def __init__(self,product_name,description,price,review,stock,warranty):
@@ -63,30 +67,76 @@ class electronics(product):
         return f"[{super().displayinfo()} size:{self.warranty}]"
 
 class cart:
-    def __init__(self,cart_contents):
+    def __init__(self):
         self.cart_contents = []
+
+    def cartquantity(self):
+        total = 0 
+        for item in self.cart_contents:
+            total = total + item["quantity"]
+        return total
+
     
-    def add_item():
-    def remove_item():
-    def total_price():
-    def total_items():
-            
+    def add_item(self, product, quantity):#will add items to the cart
+        if product.reducestock(quantity):
+            self.cart_contents.append({"product": product, "quantity":quantity})
+        else:
+            print("Item not added to cart")
 
-class order:
-    def __init__(self,order_id,address,date,customer):
-        self.order_id = order_id
-        self.address = address
-        self.date = date
-        self.customer = customer
+    def remove_item(self):
+    def total_price(self):
+        total = 0 
+        for item in self.cart_contents:
+            total = total + item["product"].get_price * item["quantity"]
+        return total
 
-    def order_summary():
+    def view_cart(self):
+        if not self.cart_contents:
+            print("No items in Cart")
+            return 
+        print("Shopping Cart")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣷⣤⣄⣉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣷⡄⠹⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⡄⢰⣶⣶⣶⣶⡆⢰⣶⣶⣶⣶⠀⣶⣶⣶⣶⣶⠆⣸⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣷⠀⠿⠿⠿⠿⠇⠘⠿⠿⠿⠿⠀⠻⠿⠿⠿⠟⢀⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣇⠘⣿⣿⣿⡇⢸⣿⣿⣿⣿⠀⣾⣿⣿⣿⠀⣼⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠘⠛⠛⠃⠘⠛⠛⠛⠛⠀⠛⠛⠛⠃⢰⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⣿⣿⡇⢸⣿⣿⣿⣿⠀⣿⣿⡟⢀⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠈⣛⣃⣈⣛⣛⣛⣛⣀⣙⣛⣁⣼⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡁⠈⡉⠉⣉⣉⣉⣉⣉⣉⠉⣉⠉⢉⣿⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠘⠟⢀⣿⣿⣿⣿⣿⣿⡈⠻⠃⣸⣿⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+        for item in self.cart_contents:
+            i = item.["product"]
+            print(f"{i.product_name}:- Quantity:{item["quantity"]}")
+        print(f"Full Price: £{self.total_price():.2f}")
 
 def main():
+    inventory = [product_id,product_name,description,price,review,stock
+        electronics("E000","Laptop","windows Hp laptop 2015",1000.00,"",10)
+        clothes("C000","Hoodie","Cotton zip up hoodie",15.00,"",30)
+        product("P000","carrot cake","crunchy crunchy carrot cake",5.00,"",5)
+    ]
+    my_cart = cart()
     user_login()
-    print("---MAIN SHOP PAGE---")
-    print("")
-    print("")
-    print ("~~~~~~~~~~~~~~~~~~")#main menu
+    while True:
+        print(f"--------MAIN SHOP PAGE--------cart({my_cart.cartquantity()})")
+        print("")
+        print("")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")#main menu
+        print(f"this is a placeholder for a random item display as an ad")
+        print("1. Catalogue") 
+        print("2. Search For Item")
+        print("3. View Cart")
+        print("4. Checkout")
+        print("5. Exit")
+        
+
+
 
 def new_user():
     newuser = input("please enter a new unique username:")   
