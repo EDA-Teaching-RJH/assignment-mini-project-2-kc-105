@@ -8,13 +8,14 @@ class Customer:
         self.email = email
 
     def getuser(self):
+        return f"User:{self.username}, Email: {self.email}, wallet {self.wallet}"
 
 class product:
     def __init__(self,product_id,product_name,description,price,review,stock):
         self.product_id = product_id
         self.product_name = product_name
         self.description = description
-        self.__price = price
+        self.price = price
         self.review = review
         self.stock = stock
 
@@ -36,13 +37,13 @@ class product:
     def detailed_view(self):
         return f"[{self.product_name}({self.product_id}): {self.price:.2f} (stock:{self.stock}) {self.description} {self.review}]"
     
-    def product_search(self):
-    #allow the user to search for certain items 
+    def product_search(self):#allow the user to search for certain items
+        return f""
 
 
 class clothes(product):
-    def __init__(self,product_name,description,price,review,stock,size):
-        super().__init__(product_name,description,price,review,stock)
+    def __init__(self,product_id,product_name,description,price,review,stock,size):
+        super().__init__(product_id,product_name,description,price,review,stock)
         self.size = size
 
     def displayinfo(self):# will display the size as well
@@ -56,8 +57,8 @@ class clothes(product):
         
         
 class electronics(product):
-    def __init__(self,product_name,description,price,review,stock,warranty):
-        super().__init__(product_name,description,price,review,stock)
+    def __init__(self,product_id,product_name,description,price,review,stock,warranty):
+        super().__init__(product_id,product_name,description,price,review,stock)
         self.warranty = warranty
 
     def displayinfo(self):# will display the warranty as well
@@ -83,7 +84,8 @@ class cart:
         else:
             print("Item not added to cart")
 
-    def remove_item(self):
+    #def remove_item(self):
+    
     def total_price(self):
         total = 0 
         for item in self.cart_contents:
@@ -111,18 +113,22 @@ class cart:
         print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
         print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
         for item in self.cart_contents:
-            i = item.["product"]
+            i = item["product"]
             print(f"{i.product_name}:- Quantity:{item["quantity"]}")
         print(f"Full Price: £{self.total_price():.2f}")
 
 def main():
-    inventory = [product_id,product_name,description,price,review,stock
-        electronics("E000","Laptop","windows Hp laptop 2015",1000.00,"",10)
-        clothes("C000","Hoodie","Cotton zip up hoodie",15.00,"",30)
-        product("P000","carrot cake","crunchy crunchy carrot cake",5.00,"",5)
-    ]
+    inventory = [
+        electronics("E000","Laptop","windows Hp laptop 2015",1000.00,"review",10,"5 years"),
+        clothes("C000","Hoodie","Cotton zip up hoodie",15.00,"review",30,"UK10"),
+        product("P000","carrot cake","crunchy crunchy carrot cake",5.00,"review",5)]
+    
     my_cart = cart()
-    user_login()
+    #currentuser = user_login()
+    #print(f"Welcome to the shoppe {currentuser.username}")
+    print("loading...")
+    print("loading...")
+    print("loading...")
     while True:
         print(f"--------MAIN SHOP PAGE--------cart({my_cart.cartquantity()})")
         print("")
@@ -134,7 +140,41 @@ def main():
         print("3. View Cart")
         print("4. Checkout")
         print("5. Exit")
+        opt = input("Select option:")
         
+        match opt:
+            case "1":
+                #product_browsing(inventory)
+                print("~~~~~~~~Catalogue~~~~~~~~~~~")
+                for item in inventory:
+                    print(item.displayinfo()) 
+            case "2":
+                #product_search(inventory)
+                searchterm = input("Please Enter Item ID")
+                search_item = next ((p for p in inventory if p.product_id == searchterm))
+                if search_item:
+                    cartconfirm = input("would you like to add to cart(y/n)?")
+                    if cartconfirm == "y":
+                        quantity = int(input(f"how many {search_item.product_name}s?"))
+                        my_cart.add_item(search_item, quantity)
+                else:
+                    print("product not found")
+            case "3":
+                my_cart.view_cart()
+            case "4":
+                print("Finalising order")
+                print (f"Amount due:£{my_cart.total_price():.2f}")
+                #add receipt output as txt file
+                print ("Shop with us again!")
+                break
+            case "5":
+                print("Thank you come again!")
+                break
+            case _:
+               print("please enter a valid option") 
+
+        if __name__ == "__main__":
+            main()
 
 
 
@@ -142,15 +182,12 @@ def new_user():
     newuser = input("please enter a new unique username:")   
     while True:
         newemail= input("please enter a new unique email")
-        validemailtest(newemail)        
+        validemailtester = r'[^a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-.]+$'
+        if re.fullmatch(newemail, validemailtester):
+            break
+        else:
+            print ("please enter a valid email")       
     newpassword = input("please enter a new unique password:")
-
-def validemailtest(newemail):
-    validemailtest = r'[^a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-.]+$'
-    if re.fullmatch(newemail, validemailtest)
-        return False
-    else
-        print ("please enter a valid email")
 
 def user_login():#let the user login with their username and password
     while True:
@@ -158,12 +195,22 @@ def user_login():#let the user login with their username and password
         print("Please Login")
         currentuser = input("username:")#if usernot found offer to create new user
         currentpassword = input("password")
-        if usernotfound:
+        if currentuser not in Customer:
             input("would you like to make a new user(y/n)")
-            new_user    
+            new_user()  
     
-def product_browsing():
-    #allow the user to scroll through different items nad pages
+#def product_search(inventory):#allow the user to search for certain items
+#    searchterm = input("Please Enter Item ID")
+#    search_item = next ((p for p in inventory if p.product_id == searchterm))
+#    if search_item:
+#        quantity = int(input(f"how many {search_item.product_name}s?"))
+#        my_cart.add_item(search_item, quantity)
+    #for i in inventory:
+    #    if searchterm in i.inventory() or in i.
 
-def product_search(self):
-    #allow the user to search for certain items
+#def product_browsing(inventory):#allow the user to scroll through different items nad pages
+#    print("~~~~~~~~Catalogue~~~~~~~~~~~")
+#    for item in inventory:
+#        print(item.displayinfo()) 
+
+main()
