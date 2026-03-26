@@ -1,5 +1,6 @@
 import sys
 import re
+import datetime
 class Customer:
     def __init__(self,username,password,wallet,email):
         self.username = username
@@ -21,7 +22,7 @@ class product:
 
     def reducestock(self, quantity):
         if quantity <= self.stock:
-            self.stock = self.stock - 1
+            self.stock = self.stock - quantity
             return True
         else:
             print(f"Not enough stock left of {self.name}")
@@ -72,50 +73,77 @@ class cart:
         self.cart_contents = []
 
     def cartquantity(self):
-        total = 0 
+        total = 0
         for item in self.cart_contents:
             total = total + item["quantity"]
         return total
-
     
-    def add_item(self, product, quantity):#will add items to the cart
-        if product.reducestock(quantity):
-            self.cart_contents.append({"product": product, "quantity":quantity})
+    def add_item(self, products, quantity):
+        seeker = products.reducestock(quantity) 
+        if seeker:
+            self.cart_contents.append({"product": products, "quantity": quantity})
+            print("added to cart")
         else:
             print("Item not added to cart")
 
-    #def remove_item(self):
+    def receipt_generator(self, user):
+        transactiontime = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+        filename = f"receipt-{user.username}-{transactiontime}.txt"
+
+        try:
+            with open(filename, "w") as file:
+                file.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                file.write("~~~~~~~~~~~~Receipt~~~~~~~~~~~~~~~~~")
+                file.write(f"Customer:{user.username}\n")
+                file.write(f"Email   :{user.email}\n")
+                file.write(f"Date    :{datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S\n")}")
+                file.write(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+                i = 0
+                for item in self.cart_contents:
+                    i = i + 1
+                    prod = item["product"]
+                    qty = item["quantity"]
+                    itemprice = prod.get_price() * qty
+                    file.write(f"{i} :{prod.productname:<20} £{itemprice:>8.2f}\n")
+                    file.write(f"x{qty:<3}\n")
+                file.write(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+                file.write(f"Total price:    £{self.total_price:>8.2f}\n")
+            print ("Receipt {filename} printed")
+        except IOError as e:
+            print(f"Error printing Receipt ({e})")
+
     
     def total_price(self):
         total = 0 
         for item in self.cart_contents:
-            total = total + item["product"].get_price * item["quantity"]
+            total = total + item["product"].get_price() * item["quantity"]
         return total
 
     def view_cart(self):
-        if not self.cart_contents:
+        if len(self.cart_contents) == 0:
             print("No items in Cart")
             return 
-        print("Shopping Cart")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣷⣤⣄⣉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣷⡄⠹⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⡄⢰⣶⣶⣶⣶⡆⢰⣶⣶⣶⣶⠀⣶⣶⣶⣶⣶⠆⣸⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣷⠀⠿⠿⠿⠿⠇⠘⠿⠿⠿⠿⠀⠻⠿⠿⠿⠟⢀⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣇⠘⣿⣿⣿⡇⢸⣿⣿⣿⣿⠀⣾⣿⣿⣿⠀⣼⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠘⠛⠛⠃⠘⠛⠛⠛⠛⠀⠛⠛⠛⠃⢰⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⣿⣿⡇⢸⣿⣿⣿⣿⠀⣿⣿⡟⢀⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠈⣛⣃⣈⣛⣛⣛⣛⣀⣙⣛⣁⣼⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡁⠈⡉⠉⣉⣉⣉⣉⣉⣉⠉⣉⠉⢉⣿⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠘⠟⢀⣿⣿⣿⣿⣿⣿⡈⠻⠃⣸⣿⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-        print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-        for item in self.cart_contents:
-            i = item["product"]
-            print(f"{i.product_name}:- Quantity:{item["quantity"]}")
-        print(f"Full Price: £{self.total_price():.2f}")
+        else:
+            print("Shopping Cart")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣷⣤⣄⣉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣷⡄⠹⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⡄⢰⣶⣶⣶⣶⡆⢰⣶⣶⣶⣶⠀⣶⣶⣶⣶⣶⠆⣸⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣷⠀⠿⠿⠿⠿⠇⠘⠿⠿⠿⠿⠀⠻⠿⠿⠿⠟⢀⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣇⠘⣿⣿⣿⡇⢸⣿⣿⣿⣿⠀⣾⣿⣿⣿⠀⣼⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠘⠛⠛⠃⠘⠛⠛⠛⠛⠀⠛⠛⠛⠃⢰⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡀⣿⣿⡇⢸⣿⣿⣿⣿⠀⣿⣿⡟⢀⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠈⣛⣃⣈⣛⣛⣛⣛⣀⣙⣛⣁⣼⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡁⠈⡉⠉⣉⣉⣉⣉⣉⣉⠉⣉⠉⢉⣿⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠘⠟⢀⣿⣿⣿⣿⣿⣿⡈⠻⠃⣸⣿⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+            for item in self.cart_contents:
+                i = item["product"]
+                print(f"{i.product_name}:- Quantity:{item["quantity"]}")
+            print(f"Full Price: £{self.total_price():.2f}")
 
 def main():
     inventory = [
@@ -150,31 +178,37 @@ def main():
                     print(item.displayinfo()) 
             case "2":
                 #product_search(inventory)
-                searchterm = input("Please Enter Item ID")
+                searchterm = input("Please Enter Item ID").strip().upper()
+                for item in inventory:
+                    if item.product_id == searchterm: 
+                        print(item.displayinfo()) 
                 search_item = next ((p for p in inventory if p.product_id == searchterm))
                 if search_item:
                     cartconfirm = input("would you like to add to cart(y/n)?")
                     if cartconfirm == "y":
-                        quantity = int(input(f"how many {search_item.product_name}s?"))
-                        my_cart.add_item(search_item, quantity)
+                        quty = int(input(f"how many {search_item.product_name}s?"))
+                        my_cart.add_item(search_item, quty)
                 else:
                     print("product not found")
             case "3":
                 my_cart.view_cart()
             case "4":
-                print("Finalising order")
-                print (f"Amount due:£{my_cart.total_price():.2f}")
-                #add receipt output as txt file
-                print ("Shop with us again!")
-                break
+                if not my_cart.cart_contents:
+                    print ("cart empty no items purchased")
+                else:
+                    print("Finalising order")
+                    print (f"Amount due:£{my_cart.total_price():.2f}")
+                    my_cart.receipt_generator(currentuser)
+                    print ("Shop with us again!")
+                    break
             case "5":
                 print("Thank you come again!")
                 break
             case _:
                print("please enter a valid option") 
 
-        if __name__ == "__main__":
-            main()
+    if __name__ == "__main__":
+        main()
 
 
 
@@ -183,7 +217,7 @@ def new_user():
     while True:
         newemail= input("please enter a new unique email")
         validemailtester = r'[^a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-.]+$'
-        if re.fullmatch(newemail, validemailtester):
+        if re.fullmatch(validemailtester, newemail):
             break
         else:
             print ("please enter a valid email")       
