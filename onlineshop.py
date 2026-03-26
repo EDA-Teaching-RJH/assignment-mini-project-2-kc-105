@@ -1,6 +1,7 @@
 import sys
 import re
 import datetime
+import json
 class Customer:
     def __init__(self,username,password,wallet,email):
         self.username = username
@@ -33,10 +34,10 @@ class product:
         
 
     def displayinfo(self):
-        return f"[{self.product_name}({self.product_id}): {self.price:.2f} (stock:{self.stock})]"
+        return f"{self.product_name}({self.product_id}): £{self.price:.2f} stock:{self.stock}"
     
     def detailed_view(self):
-        return f"[{self.product_name}({self.product_id}): {self.price:.2f} (stock:{self.stock}) {self.description} {self.review}]"
+        return f"{self.product_name}({self.product_id}): £{self.price:.2f} stock:{self.stock} {self.description} {self.review}"
     
     def product_search(self):#allow the user to search for certain items
         return f""
@@ -51,7 +52,10 @@ class clothes(product):
         return f"[{super().displayinfo()} size:{self.size}]"
     
     def detailed_view(self):
-        return f"[{super().displayinfo()} size:{self.size}]"
+        return f"[{super().detailed_view()} size:{self.size}]"
+    
+    def getproductname(self):
+        return self.product_name
     
     def get_price(self):
         return self.price * 0.9#if customer is employee 10% discount
@@ -63,10 +67,10 @@ class electronics(product):
         self.warranty = warranty
 
     def displayinfo(self):# will display the warranty as well
-        return f"[{super().displayinfo()} size:{self.warranty}]"
+        return f"[{super().displayinfo()} Warranty:{self.warranty}]"
     
     def detailed_view(self):
-        return f"[{super().displayinfo()} size:{self.warranty}]"
+        return f"[{super().detailed_view()} Warranty:{self.warranty}]"
 
 class cart:
     def __init__(self):
@@ -126,7 +130,6 @@ class cart:
         else:
             print("Shopping Cart")
             print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣷⣤⣄⣉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣿⣿⣿⣿⣷⡄⠹⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿")
             print("    ⣿⣿⣿⣿⣿⣿⣿⡄⢰⣶⣶⣶⣶⡆⢰⣶⣶⣶⣶⠀⣶⣶⣶⣶⣶⠆⣸⣿⣿⣿")
@@ -139,35 +142,31 @@ class cart:
             print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡁⠈⡉⠉⣉⣉⣉⣉⣉⣉⠉⣉⠉⢉⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠘⠟⢀⣿⣿⣿⣿⣿⣿⡈⠻⠃⣸⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-            print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
             for item in self.cart_contents:
                 i = item["product"]
                 print(f"{i.product_name}:- Quantity:{item["quantity"]}")
             print(f"Full Price: £{self.total_price():.2f}")
 
 def main():
-    inventory = [
-        electronics("E000","Laptop","windows Hp laptop 2015",1000.00,"review",10,"5 years"),
-        clothes("C000","Hoodie","Cotton zip up hoodie",15.00,"review",30,"UK10"),
-        product("P000","carrot cake","crunchy crunchy carrot cake",5.00,"review",5)]
-    
+    inventory = load_inventory("products.json")
     my_cart = cart()
-    #currentuser = user_login()
-    #print(f"Welcome to the shoppe {currentuser.username}")
+    currentuser = user_login()
+    print(f"Welcome to the shoppe {currentuser.username}")
     print("loading...")
     print("loading...")
     print("loading...")
     while True:
         print(f"--------MAIN SHOP PAGE--------cart({my_cart.cartquantity()})")
-        print("")
+        print("SALE!!! 10% OFF ALL CLOTHES")
         print("")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")#main menu
         print(f"this is a placeholder for a random item display as an ad")
         print("1. Catalogue") 
-        print("2. Search For Item")
-        print("3. View Cart")
-        print("4. Checkout")
-        print("5. Exit")
+        print("2. Search For Item by ID")
+        print("3. Search by Name")
+        print("4. View Cart")
+        print("5. Checkout")
+        print("6. Exit")
         opt = input("Select option:")
         
         match opt:
@@ -178,7 +177,7 @@ def main():
                     print(item.displayinfo()) 
             case "2":
                 #product_search(inventory)
-                searchterm = input("Please Enter Item ID").strip().upper()
+                searchterm = input("Please Enter product ID").strip().upper()
                 for item in inventory:
                     if item.product_id == searchterm: 
                         print(item.displayinfo()) 
@@ -191,8 +190,22 @@ def main():
                 else:
                     print("product not found")
             case "3":
-                my_cart.view_cart()
+                searchterm = input("Please Enter Search Term").lower()
+
+                for item in inventory:
+                    if item.product_name == searchterm: 
+                        print(item.displayinfo()) 
+                search_item = next ((p for p in inventory if searchterm in p.product_name.lower()))
+                if search_item:
+                    cartconfirm = input("would you like to add to cart(y/n)?")
+                    if cartconfirm == "y":
+                        quty = int(input(f"how many {search_item.product_name}s?"))
+                        my_cart.add_item(search_item, quty)
+                else:
+                    print("product not found")
             case "4":
+                my_cart.view_cart()
+            case "5":
                 if not my_cart.cart_contents:
                     print ("cart empty no items purchased")
                 else:
@@ -201,7 +214,7 @@ def main():
                     my_cart.receipt_generator(currentuser)
                     print ("Shop with us again!")
                     break
-            case "5":
+            case "6":
                 print("Thank you come again!")
                 break
             case _:
@@ -231,8 +244,28 @@ def user_login():#let the user login with their username and password
         currentpassword = input("password")
         if currentuser not in Customer:
             input("would you like to make a new user(y/n)")
-            new_user()  
-    
+            new_user()
+
+def load_inventory(filename):
+    inventory = []
+    try:
+        with open(filename, "r")as file:
+            data = json.load(file)
+            for item in data:
+                if item["type"] == "electronics":
+                    obj = electronics(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],item["warranty"])
+                elif item["type"] == "clothes":
+                    obj = electronics(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],item["size"])
+                else:
+                    obj = electronics(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],)
+                inventory.append(obj)
+        print(f"Loaded {len(inventory)} items")
+    except FileNotFoundError:
+        print ("No inventory found shop empty")
+    return inventory
+
+
+
 #def product_search(inventory):#allow the user to search for certain items
 #    searchterm = input("Please Enter Item ID")
 #    search_item = next ((p for p in inventory if p.product_id == searchterm))

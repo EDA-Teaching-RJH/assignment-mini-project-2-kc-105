@@ -1,0 +1,5 @@
+[
+        {"type":"electronics","product_id":"E000","product_name":"Laptop","description":"windows Hp laptop 2015","price":1000.00,"review":"review","stock":10,"warranty":"5 years"},
+       {"type":"clothes","product_id":"C000","product_name":"Hoodie","description":"Cotton zip up hoodie","price":15.00,"review":"review","stock":30,"size":"UK10"},
+        {"type":"product","product_id":"P000","product_name":"carrot cake","description":"crunchy crunchy carrot cake","price":5.00,"review":"review","stock":5}
+    ]
