@@ -1,16 +1,17 @@
-import sys
 import re
 import datetime
 import json
 class Customer:
-    def __init__(self,username,password,wallet,email):
+    def __init__(self,username,email,wallet,):
         self.username = username
-        self.password = password
         self.wallet = wallet
         self.email = email
 
     def getuser(self):
-        return f"User:{self.username}, Email: {self.email}, wallet {self.wallet}"
+        return f"User:{self.username}, Email: {self.email}, Current wallet {self.wallet}"
+    
+    def getuserstore(self):
+        return {"username":self.username,"email": self.email, "wallet" :self.wallet}
 
 class product:
     def __init__(self,product_id,product_name,description,price,review,stock):
@@ -39,9 +40,6 @@ class product:
     def detailed_view(self):
         return f"{self.product_name}({self.product_id}): £{self.price:.2f} stock:{self.stock} {self.description} {self.review}"
     
-    def product_search(self):#allow the user to search for certain items
-        return f""
-
 
 class clothes(product):
     def __init__(self,product_id,product_name,description,price,review,stock,size):
@@ -98,8 +96,7 @@ class cart:
             with open(filename, "w") as file:
                 file.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 file.write("~~~~~~~~~~~~Receipt~~~~~~~~~~~~~~~~~")
-                file.write(f"Customer:{user.username}\n")
-                file.write(f"Email   :{user.email}\n")
+                file.write(f"Customer:{user.getuser}\n")
                 file.write(f"Date    :{datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S\n")}")
                 file.write(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
                 i = 0
@@ -123,12 +120,13 @@ class cart:
             total = total + item["product"].get_price() * item["quantity"]
         return total
 
-    def view_cart(self):
+    def view_cart(self, currentuser):
         if len(self.cart_contents) == 0:
             print("No items in Cart")
             return 
         else:
             print("Shopping Cart")
+            currentuser.getuser()
             print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣷⣤⣄⣉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣿⣿⣿⣿⣷⡄⠹⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿")
@@ -147,6 +145,7 @@ class cart:
                 print(f"{i.product_name}:- Quantity:{item["quantity"]}")
             print(f"Full Price: £{self.total_price():.2f}")
 
+    
 def main():
     inventory = load_inventory("products.json")
     my_cart = cart()
@@ -191,7 +190,6 @@ def main():
                     print("product not found")
             case "3":
                 searchterm = input("Please Enter Search Term").lower()
-
                 for item in inventory:
                     if item.product_name == searchterm: 
                         print(item.displayinfo()) 
@@ -204,7 +202,7 @@ def main():
                 else:
                     print("product not found")
             case "4":
-                my_cart.view_cart()
+                my_cart.view_cart(currentuser)
             case "5":
                 if not my_cart.cart_contents:
                     print ("cart empty no items purchased")
@@ -225,26 +223,46 @@ def main():
 
 
 
-def new_user():
+def new_user():#create a new user and savve it to the json file
     newuser = input("please enter a new unique username:")   
     while True:
         newemail= input("please enter a new unique email")
-        validemailtester = r'[^a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-.]+$'
+        validemailtester = r'[^a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-.]+$'#checks that the email is in thecorrect firmat
         if re.fullmatch(validemailtester, newemail):
             break
         else:
             print ("please enter a valid email")       
-    newpassword = input("please enter a new unique password:")
+    newwallet = 0
+    savenewuser = Customer(newuser, newemail, newwallet)
+    saveuser = openuserfile()
+    saveuser.append(savenewuser.getusestore())
+    with open(USER_FILE, "w") as file:
+        json.dump(saveuser, file)
+    return Customer(newuser, newemail, newwallet)
 
-def user_login():#let the user login with their username and password
+def user_login():#let the user login with their username
+    usersdata = openuserfile
     while True:
         print("Welcome ")
-        print("Please Login")
-        currentuser = input("username:")#if usernot found offer to create new user
-        currentpassword = input("password")
-        if currentuser not in Customer:
-            input("would you like to make a new user(y/n)")
+        logquery = input("would you like to Login(1) or sign up(2)")
+        if logquery == 1:
+            currentuser = input("username:")
+            userdata = next((u for u in usersdata if u["username"] == currentuser))
+            if usersdata: 
+                return Customer(userdata["username"], userdata["email"], userdata["wallet"])
+            else:
+                input("user not found creating new user...")#if usernot found offer to create new user
+                new_user()
+        else:
             new_user()
+
+def openuserfile():#opens json file with user information
+    try:
+        with open(USER_FILE, "r") as file:
+            return json.load(file)
+    except(FileNotFoundError, json.JSONDecodeError):
+        return []
+    
 
 def load_inventory(filename):
     inventory = []
@@ -255,29 +273,14 @@ def load_inventory(filename):
                 if item["type"] == "electronics":
                     obj = electronics(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],item["warranty"])
                 elif item["type"] == "clothes":
-                    obj = electronics(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],item["size"])
+                    obj = clothes(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],item["size"])
                 else:
-                    obj = electronics(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],)
+                    obj = product(item["product_id"],item["product_name"],item["description"],item["price"],item["review"],item["stock"],)
                 inventory.append(obj)
         print(f"Loaded {len(inventory)} items")
     except FileNotFoundError:
         print ("No inventory found shop empty")
     return inventory
 
-
-
-#def product_search(inventory):#allow the user to search for certain items
-#    searchterm = input("Please Enter Item ID")
-#    search_item = next ((p for p in inventory if p.product_id == searchterm))
-#    if search_item:
-#        quantity = int(input(f"how many {search_item.product_name}s?"))
-#        my_cart.add_item(search_item, quantity)
-    #for i in inventory:
-    #    if searchterm in i.inventory() or in i.
-
-#def product_browsing(inventory):#allow the user to scroll through different items nad pages
-#    print("~~~~~~~~Catalogue~~~~~~~~~~~")
-#    for item in inventory:
-#        print(item.displayinfo()) 
-
+USER_FILE = "users.json"
 main()
