@@ -27,7 +27,7 @@ class product:
             self.stock = self.stock - quantity
             return True
         else:
-            print(f"Not enough stock left of {self.name}")
+            print(f"Not enough stock left of {self.product_name}")
             return False
         
     def get_price(self): #can create employee discounts using polymorphism
@@ -96,8 +96,8 @@ class cart:
             with open(filename, "w") as file:
                 file.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                 file.write("~~~~~~~~~~~~Receipt~~~~~~~~~~~~~~~~~")
-                file.write(f"Customer:{user.getuser}\n")
-                file.write(f"Date    :{datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S\n")}")
+                file.write(f"Customer:{user.getuser()}\n")
+                file.write(f"Date    :{datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S\n')}")
                 file.write(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
                 i = 0
                 for item in self.cart_contents:
@@ -105,10 +105,10 @@ class cart:
                     prod = item["product"]
                     qty = item["quantity"]
                     itemprice = prod.get_price() * qty
-                    file.write(f"{i} :{prod.productname:<20} £{itemprice:>8.2f}\n")
+                    file.write(f"{i} :{prod.product_name:<20} £{itemprice:>8.2f}\n")
                     file.write(f"x{qty:<3}\n")
                 file.write(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
-                file.write(f"Total price:    £{self.total_price:>8.2f}\n")
+                file.write(f"Total price:    £{self.total_price():>8.2f}\n")
             print ("Receipt {filename} printed")
         except IOError as e:
             print(f"Error printing Receipt ({e})")
@@ -126,7 +126,7 @@ class cart:
             return 
         else:
             print("Shopping Cart")
-            currentuser.getuser()
+            print(currentuser.getuser())
             print("    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣷⣤⣄⣉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
             print("    ⣿⣿⣿⣿⣿⣷⡄⠹⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿")
@@ -180,7 +180,7 @@ def main():
                 for item in inventory:
                     if item.product_id == searchterm: 
                         print(item.displayinfo()) 
-                search_item = next ((p for p in inventory if p.product_id == searchterm))
+                search_item = next ((p for p in inventory if p.product_id == searchterm), None)
                 if search_item:
                     cartconfirm = input("would you like to add to cart(y/n)?")
                     if cartconfirm == "y":
@@ -189,16 +189,19 @@ def main():
                 else:
                     print("product not found")
             case "3":
-                searchterm = input("Please Enter Search Term").lower()
-                for item in inventory:
+                searchterm = input("Please Enter Search Term").lower()                 
+                searchresult = next ((p for p in inventory if searchterm in p.product_name.lower()), None)
+                for index, item in inventory:
                     if item.product_name == searchterm: 
-                        print(item.displayinfo()) 
-                search_item = next ((p for p in inventory if searchterm in p.product_name.lower()))
-                if search_item:
-                    cartconfirm = input("would you like to add to cart(y/n)?")
-                    if cartconfirm == "y":
-                        quty = int(input(f"how many {search_item.product_name}s?"))
-                        my_cart.add_item(search_item, quty)
+                        print(item.displayinfo())
+                if searchresult:
+                    for index, item in enumerate(searchresult):
+                        print(f"{index + 1}. {item.displayinfo()}")
+                        search_item = searchresult[0] 
+                        cartconfirm = input(f"Add {search_item.product_name} to cart (y/n)? ")
+                        if cartconfirm == "y":
+                            quty = int(input("How many? "))
+                            my_cart.add_item(search_item, quty)
                 else:
                     print("product not found")
             case "4":
@@ -242,19 +245,18 @@ def new_user():#create a new user and savve it to the json file
 
 def user_login():#let the user login with their username
     usersdata = openuserfile
-    while True:
-        print("Welcome ")
-        logquery = input("would you like to Login(1) or sign up(2)")
-        if logquery == 1:
-            currentuser = input("username:")
-            userdata = next((u for u in usersdata if u["username"] == currentuser))
-            if usersdata: 
-                return Customer(userdata["username"], userdata["email"], userdata["wallet"])
-            else:
-                input("user not found creating new user...")#if usernot found offer to create new user
-                new_user()
+    print("Welcome ")
+    logquery = input("would you like to Login(1) or sign up(2)")
+    if logquery == 1:
+        currentuser = input("username:")
+        userdata = next((u for u in usersdata if u["username"] == currentuser))
+        if usersdata: 
+            return Customer(userdata["username"], userdata["email"], userdata["wallet"])
         else:
+            input("user not found creating new user...")#if usernot found offer to create new user
             new_user()
+    else:
+        new_user()
 
 def openuserfile():#opens json file with user information
     try:
