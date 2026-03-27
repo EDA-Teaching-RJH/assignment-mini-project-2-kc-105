@@ -94,8 +94,8 @@ class cart:
 
         try:
             with open(filename, "w") as file:
-                file.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                file.write("~~~~~~~~~~~~Receipt~~~~~~~~~~~~~~~~~")
+                file.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+                file.write("~~~~~~~~~~~~Receipt~~~~~~~~~~~~~~~~~\n")
                 file.write(f"Customer:{user.getuser()}\n")
                 file.write(f"Date    :{datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S\n')}")
                 file.write(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
@@ -159,7 +159,6 @@ def main():
         print("SALE!!! 10% OFF ALL CLOTHES")
         print("")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")#main menu
-        print(f"this is a placeholder for a random item display as an ad")
         print("1. Catalogue") 
         print("2. Search For Item by ID")
         print("3. Search by Name")
@@ -190,10 +189,7 @@ def main():
                     print("product not found")
             case "3":
                 searchterm = input("Please Enter Search Term").lower()                 
-                searchresult = next ((p for p in inventory if searchterm in p.product_name.lower()), None)
-                for index, item in inventory:
-                    if item.product_name == searchterm: 
-                        print(item.displayinfo())
+                searchresult = [p for p in inventory if searchterm in p.product_name.lower()]
                 if searchresult:
                     for index, item in enumerate(searchresult):
                         print(f"{index + 1}. {item.displayinfo()}")
@@ -221,10 +217,6 @@ def main():
             case _:
                print("please enter a valid option") 
 
-    if __name__ == "__main__":
-        main()
-
-
 
 def new_user():#create a new user and savve it to the json file
     newuser = input("please enter a new unique username:")   
@@ -244,10 +236,10 @@ def new_user():#create a new user and savve it to the json file
     return Customer(newuser, newemail, newwallet)
 
 def user_login():#let the user login with their username
-    usersdata = openuserfile
+    usersdata = openuserfile()
     print("Welcome ")
     logquery = input("would you like to Login(1) or sign up(2)")
-    if logquery == 1:
+    if logquery == "1":
         currentuser = input("username:")
         userdata = next((u for u in usersdata if u["username"] == currentuser))
         if usersdata: 
@@ -285,4 +277,6 @@ def load_inventory(filename):
     return inventory
 
 USER_FILE = "users.json"
-main()
+if __name__ == "__main__":
+        main()
+
