@@ -1,7 +1,7 @@
 import re
 import datetime
 import json
-class Customer:
+class Customer:#class to make customers
     def __init__(self,username,email,wallet,):
         self.username = username
         self.wallet = wallet
@@ -13,7 +13,7 @@ class Customer:
     def getuserstore(self):
         return {"username":self.username,"email": self.email, "wallet" :self.wallet}
 
-class product:
+class product:#class to make products
     def __init__(self,product_id,product_name,description,price,review,stock):
         self.product_id = product_id
         self.product_name = product_name
@@ -22,7 +22,7 @@ class product:
         self.review = review
         self.stock = stock
 
-    def reducestock(self, quantity):
+    def reducestock(self, quantity):#reduces the amount of stock of an item after its has been purchased for example
         if quantity <= self.stock:
             self.stock = self.stock - quantity
             return True
@@ -46,7 +46,7 @@ class clothes(product):
         super().__init__(product_id,product_name,description,price,review,stock)
         self.size = size
 
-    def displayinfo(self):# will display the size as well
+    def displayinfo(self):#polymorphism will display the size as well
         return f"[{super().displayinfo()} size:{self.size}]"
     
     def detailed_view(self):
@@ -56,7 +56,7 @@ class clothes(product):
         return self.product_name
     
     def get_price(self):
-        return self.price * 0.9#if customer is employee 10% discount
+        return self.price * 0.9#10% discount on clothes
         
         
 class electronics(product):
@@ -70,7 +70,7 @@ class electronics(product):
     def detailed_view(self):
         return f"[{super().detailed_view()} Warranty:{self.warranty}]"
 
-class cart:
+class cart:#cart class to add the cart contents and check out cart
     def __init__(self):
         self.cart_contents = []
 
@@ -80,7 +80,7 @@ class cart:
             total = total + item["quantity"]
         return total
     
-    def add_item(self, products, quantity):
+    def add_item(self, products, quantity):#adds items to the cart
         seeker = products.reducestock(quantity) 
         if seeker:
             self.cart_contents.append({"product": products, "quantity": quantity})
@@ -88,10 +88,9 @@ class cart:
         else:
             print("Item not added to cart")
 
-    def receipt_generator(self, user):
-        transactiontime = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+    def receipt_generator(self, user):#generates a receipt for the final transaction from the cart
+        transactiontime = datetime.datetime.now().strftime("%Y%m%d_%H%M")#time on receipt so its unique
         filename = f"receipt-{user.username}-{transactiontime}.txt"
-
         try:
             with open(filename, "w") as file:
                 file.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
@@ -110,17 +109,16 @@ class cart:
                 file.write(f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
                 file.write(f"Total price:    £{self.total_price():>8.2f}\n")
             print ("Receipt {filename} printed")
-        except IOError as e:
+        except IOError as e:#if receipt printing fails
             print(f"Error printing Receipt ({e})")
-
     
-    def total_price(self):
+    def total_price(self):#calculates the total price of the cart
         total = 0 
         for item in self.cart_contents:
             total = total + item["product"].get_price() * item["quantity"]
         return total
 
-    def view_cart(self, currentuser):
+    def view_cart(self, currentuser):#to view the cart contents
         if len(self.cart_contents) == 0:
             print("No items in Cart")
             return 
@@ -147,15 +145,19 @@ class cart:
 
     
 def main():
-    inventory = load_inventory("products.json")
+    inventory = load_inventory("products.json")#load items in the inventory from the json file
     my_cart = cart()
-    currentuser = user_login()
+    currentuser = user_login()#load user from json file or new created user
     print(f"Welcome to the shoppe {currentuser.username}")
     print("loading...")
     print("loading...")
     print("loading...")
     while True:
-        print(f"--------MAIN SHOP PAGE--------cart({my_cart.cartquantity()})")
+        print("")
+        print("")
+        print("")
+        print(f"--------MAIN SHOP PAGE--------cart({my_cart.cartquantity()})")#shows how may items currnlty in the cart
+        print("") 
         print("SALE!!! 10% OFF ALL CLOTHES")
         print("")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")#main menu
@@ -167,15 +169,13 @@ def main():
         print("6. Exit")
         opt = input("Select option:")
         
-        match opt:
+        match opt:#to select which menu option
             case "1":
-                #product_browsing(inventory)
                 print("~~~~~~~~Catalogue~~~~~~~~~~~")
                 for item in inventory:
                     print(item.displayinfo()) 
             case "2":
-                #product_search(inventory)
-                searchterm = input("Please Enter product ID").strip().upper()
+                searchterm = input("Please Enter product ID").strip().upper()#searches for items using the item ID
                 for item in inventory:
                     if item.product_id == searchterm: 
                         print(item.displayinfo()) 
@@ -187,12 +187,12 @@ def main():
                         my_cart.add_item(search_item, quty)
                 else:
                     print("product not found")
-            case "3":
+            case "3":#searches for items using name 
                 searchterm = input("Please Enter Search Term").lower()                 
-                searchresult = [p for p in inventory if searchterm in p.product_name.lower()]
+                searchresult = [p for p in inventory if searchterm in p.product_name.lower()]#iterating through the inventory to find any terms that match and adding them to a list
                 if searchresult:
                     for index, item in enumerate(searchresult):
-                        print(f"{index + 1}. {item.displayinfo()}")
+                        print(f"{index + 1}. {item.displayinfo()}")#displays items  with the number they appeared as in list
                         search_item = searchresult[0] 
                         cartconfirm = input(f"Add {search_item.product_name} to cart (y/n)? ")
                         if cartconfirm == "y":
@@ -222,16 +222,16 @@ def new_user():#create a new user and savve it to the json file
     newuser = input("please enter a new unique username:")   
     while True:
         newemail= input("please enter a new unique email")
-        validemailtester = r'[^a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-.]+$'#checks that the email is in thecorrect firmat
-        if re.fullmatch(validemailtester, newemail):
+        validemailtester = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-.]+$'#checks that the email is in thecorrect firmat
+        if re.match(validemailtester, newemail):
             break
         else:
             print ("please enter a valid email")       
     newwallet = 0
     savenewuser = Customer(newuser, newemail, newwallet)
     saveuser = openuserfile()
-    saveuser.append(savenewuser.getusestore())
-    with open(USER_FILE, "w") as file:
+    saveuser.append(savenewuser.getuserstore())
+    with open(USER_FILE, "w") as file:#writes info to json file 
         json.dump(saveuser, file)
     return Customer(newuser, newemail, newwallet)
 
@@ -246,9 +246,9 @@ def user_login():#let the user login with their username
             return Customer(userdata["username"], userdata["email"], userdata["wallet"])
         else:
             input("user not found creating new user...")#if usernot found offer to create new user
-            new_user()
+            return new_user()
     else:
-        new_user()
+        return new_user()
 
 def openuserfile():#opens json file with user information
     try:
@@ -258,7 +258,7 @@ def openuserfile():#opens json file with user information
         return []
     
 
-def load_inventory(filename):
+def load_inventory(filename):#loads items from inventory
     inventory = []
     try:
         with open(filename, "r")as file:
